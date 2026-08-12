@@ -1,0 +1,40 @@
+# Único .gitignore del monorepo: cubre root, frontend/ y backend/.
+
+# --- Secrets -----------------------------------------------------------
+# Los .env reales nunca se commitean; las plantillas *.example sí.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python / backend --------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / Next / frontend --------------------------------------------
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+# Lo regenera Next en cada arranque.
+next-env.d.ts
+.pnp
+.pnp.*
+*-debug.log*
+
+# --- Tooling / OS ------------------------------------------------------
+.vercel
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+CLAUDE.md
