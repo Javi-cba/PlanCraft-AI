@@ -1,0 +1,13 @@
+{
+  "name": "plancraft-ai",
+  "private": true,
+  "description": "Monorepo: frontend Next.js + backend FastAPI",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "dev": "bash scripts/dev.sh",
+    "dev:web": "cd frontend && bun run dev",
+    "dev:api": "cd backend && .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
+    "build": "cd frontend && bun run build",
+    "lint": "cd frontend && bun run lint"
+  }
+}

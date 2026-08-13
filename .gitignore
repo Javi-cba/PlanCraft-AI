@@ -7,6 +7,10 @@
 !.env.example
 *.pem
 *.key
+# Config local de Clerk, puede tener secretos.
+.clerk/
+# Clerk regenera frontend/.gitignore en cada `next dev`; la regla vive acá arriba.
+frontend/.gitignore
 
 # --- Python / backend --------------------------------------------------
 .venv/
