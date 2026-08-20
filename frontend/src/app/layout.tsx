@@ -1,32 +1,29 @@
-import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import { Inter, Outfit } from "next/font/google";
+
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
+
 export const metadata: Metadata = {
-  title: "PlanCraft AI",
+  title: "PlanCraft AI — Planos de instalaciones con IA",
   description:
-    "Generá planos de instalaciones eléctricas y sanitarias a partir de una descripción.",
+    "Generá planos de instalaciones eléctricas, sanitarias y de gas a partir de una descripción, editalos planta por planta y exportalos a PDF.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <ClerkProvider>
-      <html lang="es">
-        <body className="min-h-dvh bg-white text-neutral-900 antialiased">
-          <header className="flex items-center justify-between border-b border-neutral-200 px-6 py-3">
-            <span className="text-sm font-semibold">PlanCraft AI</span>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white">
-                  Iniciar sesión
-                </button>
-              </SignInButton>
-            </Show>
-            <Show when="signed-in">
-              <UserButton />
-            </Show>
-          </header>
+      <html lang="es" className={`${inter.variable} ${outfit.variable}`}>
+        <body className="min-h-dvh bg-paper-100 font-sans text-ink-800 antialiased">
+          <SiteHeader />
           {children}
+          <SiteFooter />
         </body>
       </html>
     </ClerkProvider>
