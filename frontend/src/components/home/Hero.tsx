@@ -3,13 +3,6 @@ import Link from "next/link";
 
 import { FloatingModel } from "@/components/ui/FloatingModel";
 
-/** What replaces the reference design's property search: what the app does. */
-const HIGHLIGHTS = [
-  { label: "Instalaciones", value: "Eléctrica · Sanitaria · Gas" },
-  { label: "Alcance", value: "Multi-planta por proyecto" },
-  { label: "Salida", value: "Editor 2D + export a PDF" },
-] as const;
-
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
@@ -61,17 +54,6 @@ export function Hero() {
           </div>
 
         </div>
-
-        <dl className="grid gap-px overflow-hidden rounded-2xl border border-paper-300/70 bg-paper-300/50 shadow-sm sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:self-start">
-          {HIGHLIGHTS.map((item) => (
-            <div key={item.label} className="bg-paper-50/90 px-5 py-4">
-              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-ink-700/55 uppercase">
-                {item.label}
-              </dt>
-              <dd className="mt-1.5 text-sm font-medium text-ink-900">{item.value}</dd>
-            </div>
-          ))}
-        </dl>
 
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:-mr-16 lg:self-center xl:-mr-24 2xl:-mr-32">
           <FloatingModel
