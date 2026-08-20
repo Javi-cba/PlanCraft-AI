@@ -24,7 +24,10 @@ def get_client() -> Anthropic:
     settings = get_settings()
 
     if not settings.anthropic_api_key:
-        raise ExternalServiceError("ANTHROPIC_API_KEY is not configured")
+        raise ExternalServiceError(
+            "La generación con IA no está disponible en este momento.",
+            code="AI_NOT_CONFIGURED",
+        )
 
     return Anthropic(
         api_key=settings.anthropic_api_key,
