@@ -43,3 +43,7 @@ Thumbs.db
 
 CLAUDE.md
 README.md
+
+# --- Worktrees ---------------------------------------------------------
+# Worktrees locales (Claude Code los crea acá). Nunca se suben.
+.claude/worktrees/
