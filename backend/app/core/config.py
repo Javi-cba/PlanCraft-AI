@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
     debug: bool = False
 
-    # Neon (Postgres). Must use the psycopg v3 driver: postgresql+psycopg://...
+    # Neon (Postgres). Normalized below to the psycopg v3 driver.
     database_url: str
 
     # LLM. Optional at boot — only the AI routes need them.
@@ -67,6 +67,20 @@ class Settings(BaseSettings):
             for party in self.clerk_authorized_parties.split(",")
             if party.strip()
         ]
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_psycopg_driver(cls, value: str) -> str:
+        """
+        Neon (and every other provider) hands out a bare `postgresql://` URL,
+        which SQLAlchemy resolves to psycopg2 — a driver this project does not
+        install. Rewriting the scheme here means a copy-pasted connection
+        string works as-is, in .env and in the deployment's environment.
+        """
+        for prefix in ("postgresql://", "postgres://"):
+            if value.startswith(prefix):
+                return f"postgresql+psycopg://{value[len(prefix):]}"
+        return value
 
     @model_validator(mode="after")
     def _check_cors(self) -> "Settings":

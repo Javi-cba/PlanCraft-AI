@@ -1,0 +1,59 @@
+erDiagram
+    projects ||--o{ floors : contains
+    floors ||--o{ plans : has
+    plans ||--o{ elements : has
+    projects ||--o{ conversations : has
+    conversations ||--o{ messages : contains
+
+    projects {
+        uuid id PK
+        varchar external_user_id "Clerk user id (indexed)"
+        varchar name
+        text description
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    floors {
+        uuid id PK
+        uuid project_id FK "-> projects.id"
+        varchar name "Planta Baja, Planta Alta..."
+        int level "0=PB, 1=1er, -1=subsuelo (orden)"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    plans {
+        uuid id PK
+        uuid floor_id FK "-> floors.id"
+        varchar name
+        varchar installation_type "electrical | sanitary | gas"
+        jsonb canvas_meta "scale, size, background"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    elements {
+        uuid id PK
+        uuid plan_id FK "-> plans.id"
+        varchar type "outlet, switch, light, pipe..."
+        double x
+        double y
+        double rotation
+        jsonb properties "power, circuit, diameter..."
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    conversations {
+        uuid id PK
+        uuid project_id FK "-> projects.id"
+        varchar external_user_id "Clerk user id (indexed)"
+        varchar title
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    messages {
+        uuid id PK
+        uuid conversation_id FK "-> conversations.id"
+        varchar role "user | assistant | system"
+        text content
+        jsonb metadata "model, tokens, generated element ids"
+        timestamptz created_at
+    }
