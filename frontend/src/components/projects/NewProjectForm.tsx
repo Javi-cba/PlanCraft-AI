@@ -1,12 +1,17 @@
 "use client";
 
-import { Check, LoaderCircle, TriangleAlert } from "lucide-react";
+import { Check, ChevronDown, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useId, useState, type FormEvent } from "react";
 import { z } from "zod";
 
 import { useApi } from "@/hooks/useApi";
 import { isApiError } from "@/lib/api/client";
 import { createProject } from "@/lib/api/projects";
+import {
+  INSTALLATION_TYPE_LABELS,
+  INSTALLATION_TYPES,
+  type InstallationType,
+} from "@/lib/schemas/plan";
 import {
   PROJECT_DESCRIPTION_MAX_LENGTH,
   PROJECT_NAME_MAX_LENGTH,
@@ -22,7 +27,11 @@ type FormStatus =
   | { kind: "error"; message: string }
   | { kind: "success"; project: Project };
 
-type FieldErrors = { name?: string[]; description?: string[] };
+type FieldErrors = {
+  name?: string[];
+  description?: string[];
+  installation_type?: string[];
+};
 
 const LABEL_CLASSES =
   "text-[0.7rem] font-semibold tracking-[0.14em] text-ink-700/55 uppercase";
@@ -43,19 +52,26 @@ export function NewProjectForm({ onCreated }: NewProjectFormProps) {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [installationType, setInstallationType] =
+    useState<InstallationType>("electrical");
   const [status, setStatus] = useState<FormStatus>({ kind: "idle" });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const isLoading = status.kind === "loading";
   const nameId = `${fieldId}-name`;
   const descriptionId = `${fieldId}-description`;
+  const installationTypeId = `${fieldId}-installation-type`;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isLoading) return;
 
     // Same schema the request uses, so the rules match the backend's.
-    const parsed = projectCreateSchema.safeParse({ name, description });
+    const parsed = projectCreateSchema.safeParse({
+      name,
+      description,
+      installation_type: installationType,
+    });
 
     if (!parsed.success) {
       setFieldErrors(z.flattenError(parsed.error).fieldErrors);
@@ -97,7 +113,8 @@ export function NewProjectForm({ onCreated }: NewProjectFormProps) {
         Empezá <span className="font-semibold text-blueprint-600">por el nombre</span>
       </h2>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-700/80">
-        Después sumás las plantas y las instalaciones desde el editor.
+        Se crea con la Planta Baja y el plano de la instalación que elijas. Después
+        sumás más plantas y más planos desde el editor.
       </p>
 
       <div className="mt-8 space-y-5">
@@ -123,6 +140,35 @@ export function NewProjectForm({ onCreated }: NewProjectFormProps) {
               {fieldErrors.name[0]}
             </p>
           ) : null}
+        </div>
+
+        <div>
+          <label htmlFor={installationTypeId} className={LABEL_CLASSES}>
+            Instalación del primer plano
+          </label>
+          <div className="relative mt-2">
+            <select
+              id={installationTypeId}
+              name="installation_type"
+              value={installationType}
+              onChange={(event) =>
+                setInstallationType(event.target.value as InstallationType)
+              }
+              disabled={isLoading}
+              className={cn(FIELD_CLASSES, "mt-0 appearance-none pr-11")}
+            >
+              {INSTALLATION_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {INSTALLATION_TYPE_LABELS[type]}
+                </option>
+              ))}
+            </select>
+            {/* `appearance-none` drops the native arrow, so draw it back. */}
+            <ChevronDown
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-ink-700/45"
+            />
+          </div>
         </div>
 
         <div>

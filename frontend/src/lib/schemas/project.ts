@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { installationTypeSchema } from "./plan";
+
 /**
  * Contract of the projects endpoints, mirroring
  * `backend/app/schemas/project.py`. The API speaks snake_case and these
@@ -32,6 +34,9 @@ export const projectCreateSchema = z.object({
     .nullish()
     // An empty textarea means "no description", same as in the backend.
     .transform((value) => value || null),
+  // Installation of the first plan: creating a project also creates its ground
+  // floor and one plan on it, so the editor has something to open.
+  installation_type: installationTypeSchema.default("electrical"),
 });
 
 /** What a caller may hand in: `description` is optional. */
@@ -58,3 +63,38 @@ export const projectSchema = z.object({
 export const projectListSchema = z.array(projectSchema);
 
 export type Project = z.infer<typeof projectSchema>;
+
+/** Orderings `GET /projects` accepts, same values as the backend enum. */
+export const PROJECT_SORTS = ["recent", "oldest", "name"] as const;
+
+export const projectSortSchema = z.enum(PROJECT_SORTS);
+
+export type ProjectSort = z.infer<typeof projectSortSchema>;
+
+/** Labels for the sort control. Values in English, UI text in Spanish. */
+export const PROJECT_SORT_LABELS: Record<ProjectSort, string> = {
+  recent: "Más recientes",
+  oldest: "Más antiguos",
+  name: "Por nombre",
+};
+
+/** Page size the UI asks for. The backend caps `limit` at 100. */
+export const PROJECT_PAGE_SIZE = 12;
+
+/** The `Page` envelope from `backend/app/lib/responses.py`. */
+export const projectPageSchema = z.object({
+  items: z.array(projectSchema),
+  total: z.int().min(0),
+  limit: z.int().min(1),
+  offset: z.int().min(0),
+});
+
+export type ProjectPage = z.infer<typeof projectPageSchema>;
+
+/** Query string of `GET /projects`. Nullish values are dropped by the client. */
+export type ProjectListQuery = {
+  q?: string | null;
+  sort?: ProjectSort;
+  limit?: number;
+  offset?: number;
+};
