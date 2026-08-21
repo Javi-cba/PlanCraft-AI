@@ -15,10 +15,10 @@ export function Hero() {
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-5 pt-14 pb-16 sm:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)] lg:gap-x-6 lg:gap-y-10 lg:pt-16 lg:pb-24">
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:-mr-16 lg:self-center xl:-mr-24 2xl:-mr-32">
           <FloatingModel
-            src="/house-plan-3d.png"
+            src="/hero-model.png"
             alt="Maqueta 3D de una casa moderna de dos plantas apoyada sobre su plano"
             width={2000}
-            height={1062}
+            height={1041}
             sizes="(min-width: 1024px) 55vw, 92vw"
             priority
           />
