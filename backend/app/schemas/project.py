@@ -8,10 +8,13 @@ Clerk token via `get_current_user`.
 """
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.db.models.plan import InstallationType
 
 NAME_MAX_LENGTH = 120
 # The column is TEXT, so the cap is an API guardrail: it keeps a runaway paste
@@ -52,6 +55,10 @@ class ProjectCreate(BaseModel):
 
     name: ProjectName
     description: ProjectDescription
+    # Installation of the first plan the project is created with. A project
+    # without a floor and a plan is a state the editor cannot open, so creating
+    # one bootstraps both — see `project_service.create_project`.
+    installation_type: InstallationType = InstallationType.ELECTRICAL
 
     @field_validator("description")
     @classmethod
@@ -72,3 +79,46 @@ class ProjectRead(BaseModel):
     description: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class ProjectSort(StrEnum):
+    """Orderings `GET /projects` accepts. Stable: every one breaks ties by id."""
+
+    RECENT = "recent"
+    OLDEST = "oldest"
+    NAME = "name"
+
+
+DEFAULT_PAGE_SIZE = 12
+MAX_PAGE_SIZE = 100
+
+
+class ProjectListParams(BaseModel):
+    """
+    Query string of `GET /projects`, validated like any other input.
+
+    FastAPI reads it with `Query()`, so the parameters are documented in the
+    OpenAPI schema, get their defaults here, and an unknown one is rejected
+    instead of silently ignored.
+    """
+
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    q: Annotated[
+        str | None,
+        Field(
+            default=None,
+            max_length=NAME_MAX_LENGTH,
+            description="Filters by name or description, case-insensitive.",
+            examples=["córdoba"],
+        ),
+    ]
+    sort: ProjectSort = ProjectSort.RECENT
+    limit: Annotated[int, Field(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE)]
+    offset: Annotated[int, Field(default=0, ge=0)]
+
+    @field_validator("q")
+    @classmethod
+    def _blank_to_none(cls, value: str | None) -> str | None:
+        """`?q=` and `?q=%20%20` both mean "no filter"."""
+        return value or None
