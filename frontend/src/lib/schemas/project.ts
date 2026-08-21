@@ -39,9 +39,15 @@ export type ProjectCreateInput = z.input<typeof projectCreateSchema>;
 /** What actually travels in the request body. */
 export type ProjectCreateBody = z.infer<typeof projectCreateSchema>;
 
-/** A project as the API returns it. */
+/**
+ * A project as the API returns it.
+ *
+ * Ids use `z.guid()` and not `z.uuid()`: the latter also pins the version and
+ * variant bits, so a perfectly usable id (a seeded row, a future uuid v7) would
+ * be rejected as an invalid response. The format check is what matters here.
+ */
 export const projectSchema = z.object({
-  id: z.uuid(),
+  id: z.guid(),
   external_user_id: z.string(),
   name: z.string(),
   description: z.string().nullable(),
