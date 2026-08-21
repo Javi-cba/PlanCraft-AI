@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import ai, elements, health, projects
+from app.api.routes import ai, elements, floors, health, plans, projects
 from app.core.config import get_settings
 from app.lib.errors import ErrorHandlingMiddleware, register_error_handlers
 
@@ -45,6 +45,8 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(projects.router)
+    app.include_router(floors.router)
+    app.include_router(plans.router)
     app.include_router(elements.router)
     app.include_router(ai.router)
 
