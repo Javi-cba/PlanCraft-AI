@@ -8,13 +8,19 @@ token) on every route. It is never accepted from the body or the query string â€
 """
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentUserId, DbSession
 from app.db.models.project import Project
 from app.lib.responses import Page
-from app.schemas.project import ProjectCreate, ProjectListParams, ProjectRead
+from app.schemas.project import (
+    ProjectCreate,
+    ProjectDetailRead,
+    ProjectListParams,
+    ProjectRead,
+)
 from app.services import project_service
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -44,4 +50,21 @@ def list_projects(
         total=total,
         limit=params.limit,
         offset=params.offset,
+    )
+
+
+@router.get("/{project_id}", response_model=ProjectDetailRead)
+def get_project(
+    project_id: UUID,
+    external_user_id: CurrentUserId,
+    db: DbSession,
+) -> Project:
+    """
+    One project with its floors and the plans on each of them.
+
+    Three levels in a single request: the project page renders all of them, and
+    a floor here carries the summary of its layout, not the drawing itself.
+    """
+    return project_service.get_owned_project(
+        db, external_user_id, project_id, with_floors=True
     )

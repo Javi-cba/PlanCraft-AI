@@ -12,7 +12,7 @@ from collections.abc import Sequence
 
 from sqlalchemy import ColumnElement, func, or_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.db.models.floor import Floor
 from app.db.models.plan import InstallationType, Plan
@@ -90,7 +90,11 @@ def create_project(db: Session, external_user_id: str, data: ProjectCreate) -> P
 
 
 def get_owned_project(
-    db: Session, external_user_id: str, project_id: uuid.UUID
+    db: Session,
+    external_user_id: str,
+    project_id: uuid.UUID,
+    *,
+    with_floors: bool = False,
 ) -> Project:
     """
     The project, only if this user owns it. Every nested resource starts here.
@@ -99,13 +103,22 @@ def get_owned_project(
     confirm the id exists, which is more than the caller should learn. The
     owner is part of the WHERE clause, so a row that is not theirs is simply
     never selected.
+
+    `with_floors` loads the storeys and their plans in two extra queries
+    (`selectinload`), which is what the project page renders — and what keeps
+    it from doing one query per floor.
     """
-    project = db.scalars(
-        select(Project).where(
-            Project.id == project_id,
-            Project.external_user_id == external_user_id,
+    statement = select(Project).where(
+        Project.id == project_id,
+        Project.external_user_id == external_user_id,
+    )
+
+    if with_floors:
+        statement = statement.options(
+            selectinload(Project.floors).selectinload(Floor.plans)
         )
-    ).first()
+
+    project = db.scalars(statement).first()
 
     if project is None:
         raise NotFoundError("No encontramos el proyecto.", code="PROJECT_NOT_FOUND")

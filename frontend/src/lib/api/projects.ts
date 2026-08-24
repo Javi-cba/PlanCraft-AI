@@ -1,9 +1,11 @@
 import {
   projectCreateSchema,
+  projectDetailSchema,
   projectPageSchema,
   projectSchema,
   type Project,
   type ProjectCreateInput,
+  type ProjectDetail,
   type ProjectListQuery,
   type ProjectPage,
 } from "@/lib/schemas/project";
@@ -45,4 +47,19 @@ export async function listProjects(
   const payload = await api.get<unknown>("/projects", { query });
 
   return parsePayload(projectPageSchema, payload, "GET /projects");
+}
+
+/**
+ * `GET /projects/{id}` — the project with its floors and the plans on each.
+ *
+ * Three levels in one request: the project page renders all of them, and each
+ * floor brings the summary of its layout instead of the drawing itself.
+ */
+export async function getProject(
+  api: ApiClient,
+  projectId: string,
+): Promise<ProjectDetail> {
+  const payload = await api.get<unknown>(`/projects/${encodeURIComponent(projectId)}`);
+
+  return parsePayload(projectDetailSchema, payload, "GET /projects/{id}");
 }

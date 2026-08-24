@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { floorWithPlansSchema } from "./floor";
 import { installationTypeSchema } from "./plan";
 
 /**
@@ -63,6 +64,16 @@ export const projectSchema = z.object({
 export const projectListSchema = z.array(projectSchema);
 
 export type Project = z.infer<typeof projectSchema>;
+
+/**
+ * A project with its storeys and the plans on each of them: what
+ * `GET /projects/{id}` returns and the project page renders in one request.
+ */
+export const projectDetailSchema = projectSchema.extend({
+  floors: z.array(floorWithPlansSchema),
+});
+
+export type ProjectDetail = z.infer<typeof projectDetailSchema>;
 
 /** Orderings `GET /projects` accepts, same values as the backend enum. */
 export const PROJECT_SORTS = ["recent", "oldest", "name"] as const;

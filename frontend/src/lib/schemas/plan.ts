@@ -44,6 +44,20 @@ export const planCreateSchema = z.object({
 export type PlanCreateInput = z.input<typeof planCreateSchema>;
 export type PlanCreateBody = z.infer<typeof planCreateSchema>;
 
+/** Body of `PATCH /plans/{plan_id}`. Only the fields sent are written. */
+export const planUpdateSchema = z
+  .object({
+    name: planCreateSchema.shape.name.optional(),
+    installation_type: installationTypeSchema.optional(),
+    canvas_meta: canvasMetaSchema.optional(),
+  })
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    "No enviaste ningún campo para actualizar.",
+  );
+
+export type PlanUpdateInput = z.infer<typeof planUpdateSchema>;
+
 /** A plan as the API returns it. */
 export const planSchema = z.object({
   id: z.guid(),

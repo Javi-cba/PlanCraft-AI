@@ -1,8 +1,8 @@
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import ForeignKey, Index, Integer, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey, Index, Integer, String, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -29,9 +29,21 @@ class Floor(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     # 0 = ground floor, 1 = first floor, -1 = basement.
     level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
+    # Walls, openings and rooms of this storey, in centimetres. It sits on the
+    # floor and not on the plan because every installation of the same storey is
+    # drawn over the same walls — see `app/schemas/layout.py`.
+    layout: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default=text("'{}'::jsonb"),
+    )
+
     project: Mapped["Project"] = relationship(back_populates="floors")
     plans: Mapped[list["Plan"]] = relationship(
         back_populates="floor",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        # Stable order, so the plans of a floor do not shuffle between reads.
+        order_by="Plan.created_at",
     )

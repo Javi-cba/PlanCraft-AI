@@ -2,11 +2,9 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 import { PROTECTED_ROUTES } from "@/lib/auth/routes";
 
-// Next.js 16 renamed the `middleware` file convention to `proxy`, and the
-// exported function must be named `proxy`.
 const isProtectedRoute = createRouteMatcher([...PROTECTED_ROUTES]);
 
-export const proxy = clerkMiddleware(async (auth, request) => {
+export default clerkMiddleware(async (auth, request) => {
   if (isProtectedRoute(request)) {
     await auth.protect();
   }

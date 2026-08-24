@@ -15,6 +15,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.db.models.plan import InstallationType
+from app.schemas.floor import FloorWithPlansRead
 
 NAME_MAX_LENGTH = 120
 # The column is TEXT, so the cap is an API guardrail: it keeps a runaway paste
@@ -79,6 +80,18 @@ class ProjectRead(BaseModel):
     description: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class ProjectDetailRead(ProjectRead):
+    """
+    A project with its storeys and the plans on each of them.
+
+    The project page needs all three levels at once, so it is one request and
+    not one per floor. The floors carry a `summary` of their layout, never the
+    layout itself — see `schemas/floor.py`.
+    """
+
+    floors: list[FloorWithPlansRead] = Field(default_factory=list)
 
 
 class ProjectSort(StrEnum):

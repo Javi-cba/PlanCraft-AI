@@ -3,11 +3,13 @@ import Link from "next/link";
 
 import { Logo } from "@/components/layout/Logo";
 
+// Absolute anchors: a bare "#instalaciones" resolves against the current path,
+// so from /projects it would link to /projects#instalaciones and go nowhere.
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
-  { href: "#instalaciones", label: "Instalaciones" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#editor", label: "Editor" },
+  { href: "/#instalaciones", label: "Instalaciones" },
+  { href: "/#como-funciona", label: "Cómo funciona" },
+  { href: "/#editor", label: "Editor" },
 ] as const;
 
 export function SiteHeader() {
@@ -18,8 +20,6 @@ export function SiteHeader() {
           <Logo />
         </Link>
 
-        {/* The links are decorative until those routes exist, so they are
-            anchors into this page rather than dead route links. */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Principal">
           {NAV_LINKS.map((link) => (
             <Link
@@ -30,6 +30,14 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
+          <Show when="signed-in">
+            <Link
+              href="/projects"
+              className="text-sm text-ink-700/80 transition-colors hover:text-blueprint-600"
+            >
+              Mis proyectos
+            </Link>
+          </Show>
         </nav>
 
         <div className="flex items-center gap-3">
