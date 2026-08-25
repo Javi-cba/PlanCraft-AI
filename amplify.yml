@@ -12,6 +12,11 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
+            # Amplify expone las env vars en el build pero no en el runtime del
+            # server de Next. Volcarlas a .env.production hace que el server las
+            # lea en cada request (si no, Clerk no encuentra CLERK_SECRET_KEY y
+            # el middleware devuelve 500 en todas las rutas).
+            - env | grep -e CLERK_SECRET_KEY -e NEXT_PUBLIC_ >> .env.production
             - bun run build
       artifacts:
         baseDirectory: .next
