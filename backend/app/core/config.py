@@ -24,9 +24,41 @@ class Settings(BaseSettings):
     # Neon (Postgres). Normalized below to the psycopg v3 driver.
     database_url: str
 
-    # LLM. Optional at boot — only the AI routes need them.
+    # --- LLM (Vercel AI Gateway) ------------------------------------------
+    # Optional at boot: only the AI routes need them, and the API must come up
+    # without them so the rest of the product keeps working when the gateway
+    # credential is missing or rotated.
+    #
+    # The gateway speaks the Anthropic Messages API, so the official `anthropic`
+    # SDK is pointed at it — see `app/ai/provider.py`.
+    ai_gateway_api_key: str | None = None
+    ai_gateway_url: str = "https://ai-gateway.vercel.sh"
+    # Direct Anthropic credential. Only used as a fallback when no gateway key
+    # is configured, and then the model id travels without the `anthropic/`
+    # prefix the gateway expects.
     anthropic_api_key: str | None = None
-    ai_gateway_url: str | None = None
+
+    # `provider/model` as the gateway names it. Sonnet 5 is the deliberate
+    # middle of the range: strong enough to lay out a floor plan, a fraction of
+    # the price of the Opus tier.
+    ai_model: str = "anthropic/claude-sonnet-5"
+    # Generous enough for a whole house in one answer, far from the tier where
+    # a non-streaming request risks the SDK's HTTP timeout.
+    ai_max_tokens: int = 16_000
+    # How many past turns of a thread are replayed to the model. The drawing
+    # itself travels with every request, so older turns are only there for the
+    # intent ("un poco más grande", "igual que el anterior").
+    ai_history_turns: int = 12
+    # On a schema violation instructor re-asks with the validation error. Two
+    # extra attempts fix the occasional malformed id without burning credit.
+    ai_max_retries: int = 2
+
+    # --- AI rate limiting -------------------------------------------------
+    # Requests per minute allowed before the API answers 429. Two windows: one
+    # per user, so nobody monopolizes the quota, and one for the whole process,
+    # which is what actually protects the gateway bill.
+    ai_user_requests_per_minute: int = 6
+    ai_requests_per_minute: int = 30
 
     # --- Clerk (auth) -----------------------------------------------------
     # Public keys used to verify the session JWT sent by the frontend.

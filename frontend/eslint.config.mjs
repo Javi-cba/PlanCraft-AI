@@ -1,10 +1,21 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { FlatCompat } from "@eslint/eslintrc";
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals.js";
-import nextTs from "eslint-config-next/typescript.js";
+
+/**
+ * eslint-config-next 15.5 still ships eslintrc-style configs (its `extends`
+ * holds plugin strings, not flat config objects), so they are translated with
+ * `FlatCompat`. Spreading the package export directly throws "not iterable",
+ * and handing it to `defineConfig` as-is throws `Plugin "" not found`.
+ */
+const compat = new FlatCompat({
+  baseDirectory: dirname(fileURLToPath(import.meta.url)),
+});
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

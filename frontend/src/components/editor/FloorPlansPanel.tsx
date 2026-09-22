@@ -193,12 +193,6 @@ export function FloorPlansPanel({
           </li>
         ))}
       </ul>
-
-      <p className="mt-4 rounded-xl bg-paper-100 px-3 py-2 text-[0.7rem] leading-relaxed text-ink-700/60">
-        Por ahora el editor dibuja la obra: paredes, aberturas y ambientes, que son los
-        mismos para todas las instalaciones del piso. Los símbolos de cada instalación
-        vienen después.
-      </p>
     </section>
   );
 }

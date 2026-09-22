@@ -35,8 +35,9 @@ def create_app() -> FastAPI:
         allow_credentials=settings.cors_allow_credentials,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
-        # Headers the browser is allowed to read from the response.
-        expose_headers=["Content-Disposition", "X-Request-Id"],
+        # Headers the browser is allowed to read from the response. Without
+        # `Retry-After` here the AI panel could not tell how long a 429 lasts.
+        expose_headers=["Content-Disposition", "Retry-After", "X-Request-Id"],
         # Cache the preflight for 10 minutes (Chrome's maximum).
         max_age=600,
     )

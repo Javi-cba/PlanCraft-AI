@@ -114,6 +114,21 @@ class ValidationAppError(AppError):
     message = "Los datos enviados no son válidos."
 
 
+class TooManyRequestsError(AppError):
+    """
+    The caller (or the whole process) went over an allowance.
+
+    `details["retry_after"]` carries the seconds to wait, and the handler copies
+    it to the `Retry-After` header so a client can back off without parsing the
+    body. Raised by the AI routes, which are the only ones that cost money per
+    request — see `app/lib/rate_limit.py`.
+    """
+
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    code = "TOO_MANY_REQUESTS"
+    message = "Hiciste demasiadas solicitudes. Esperá un momento antes de reintentar."
+
+
 class ExternalServiceError(AppError):
     """An upstream dependency (LLM provider, third-party API) failed."""
 
@@ -206,7 +221,16 @@ def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return _error_response(exc.status_code, exc.code, exc.message, exc.details)
+        response = _error_response(exc.status_code, exc.code, exc.message, exc.details)
+
+        # A 429 that says how long to wait is the difference between a client
+        # that backs off and one that hammers. `Retry-After` is the standard
+        # place to say it; the body repeats it for code that never reads headers.
+        retry_after = (exc.details or {}).get("retry_after")
+        if exc.status_code == status.HTTP_429_TOO_MANY_REQUESTS and retry_after:
+            response.headers["Retry-After"] = str(int(retry_after))
+
+        return response
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(

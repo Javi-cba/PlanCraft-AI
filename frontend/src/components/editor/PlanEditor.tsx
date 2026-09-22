@@ -1,10 +1,19 @@
 "use client";
 
-import { ArrowLeft, Check, LayoutTemplate, LoaderCircle, Save, TriangleAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  LayoutTemplate,
+  LoaderCircle,
+  Save,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { AiAssistantPanel } from "@/components/editor/AiAssistantPanel";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { FloorPlansPanel } from "@/components/editor/FloorPlansPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
@@ -13,6 +22,7 @@ import { useApi } from "@/hooks/useApi";
 import { isApiError } from "@/lib/api/client";
 import { saveFloorLayout } from "@/lib/api/floors";
 import { findTemplate, instantiateTemplate } from "@/lib/plans/templates";
+import type { AiStatus, Conversation } from "@/lib/schemas/ai";
 import { floorLevelLabel, type FloorDetail } from "@/lib/schemas/floor";
 import type { ProjectDetail } from "@/lib/schemas/project";
 import { selectIsDirty, useEditorStore } from "@/lib/store/editorStore";
@@ -50,9 +60,15 @@ type SaveState =
 export function PlanEditor({
   project,
   floor,
+  aiStatus,
+  aiConversation,
 }: {
   project: Pick<ProjectDetail, "id" | "name">;
   floor: FloorDetail;
+  /** `null` when the backend has no AI credential: the panel is not offered. */
+  aiStatus: AiStatus | null;
+  /** The thread of this floor, so reopening the editor restores the chat. */
+  aiConversation: Conversation | null;
 }) {
   const api = useApi();
 
@@ -60,6 +76,15 @@ export function PlanEditor({
   const fittedFloorRef = useRef<string | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
+
+  /**
+   * The assistant opens on its own for a floor with nothing on it — that is the
+   * moment "dibujámelo vos" is the whole point — and stays closed once there
+   * are walls, where the canvas is what matters.
+   */
+  const [isAiOpen, setIsAiOpen] = useState(
+    () => aiStatus !== null && floor.layout.walls.length === 0,
+  );
 
   const loadedFloorId = useEditorStore((state) => state.floorId);
   const isDirty = useEditorStore(selectIsDirty);
@@ -186,6 +211,7 @@ export function PlanEditor({
         g: store.toggleGrid,
         o: store.toggleOrtho,
         f: fitToContent,
+        i: () => setIsAiOpen((open) => !open),
       };
 
       shortcuts[event.key.toLowerCase()]?.();
@@ -236,6 +262,24 @@ export function PlanEditor({
         <div className="flex items-center gap-3">
           <SaveIndicator state={saveState} isDirty={isDirty} />
 
+          {aiStatus !== null ? (
+            <button
+              type="button"
+              onClick={() => setIsAiOpen((open) => !open)}
+              aria-pressed={isAiOpen}
+              title="Asistente IA (I)"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition",
+                isAiOpen
+                  ? "border-blueprint-600/60 bg-blueprint-600/10 text-blueprint-700"
+                  : "border-blueprint-600/25 text-blueprint-700 hover:border-blueprint-600/60 hover:bg-paper-50",
+              )}
+            >
+              <Sparkles aria-hidden="true" className="size-4" />
+              <span className="hidden sm:inline">Asistente IA</span>
+            </button>
+          ) : null}
+
           <button
             type="button"
             onClick={() => void save()}
@@ -254,6 +298,17 @@ export function PlanEditor({
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <EditorToolbar onFitToContent={fitToContent} />
+
+        {aiStatus !== null && isAiOpen ? (
+          <AiAssistantPanel
+            projectId={project.id}
+            floorId={floor.id}
+            status={aiStatus}
+            initialConversation={aiConversation}
+            onClose={() => setIsAiOpen(false)}
+            onApplied={fitToContent}
+          />
+        ) : null}
 
         <div
           ref={canvasRef}
