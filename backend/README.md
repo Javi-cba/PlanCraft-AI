@@ -38,7 +38,8 @@ app/
 ├── db/                     # Todo lo de base de datos
 │   ├── session.py          # ⭐ Engine + SessionLocal (conexión a Neon)
 │   ├── base.py             # Base declarativa de SQLAlchemy
-│   └── models/             # Modelos ORM (una clase por tabla)
+│   ├── models/             # Modelos ORM (una clase por tabla)
+│   └── seeds/              # Datos de demo (usuarios ficticios)
 │
 ├── ai/                     # Config de IA reutilizable
 │   ├── provider.py         # cliente del SDK (o AI Gateway) configurado
@@ -69,7 +70,20 @@ app/
 - **El output del LLM SIEMPRE se valida** con un modelo Pydantic de `ai/schemas.py` (usar `instructor`) antes de tocar la DB.
 - **`lib/` = helpers genéricos** (errores, respuestas). Nada de negocio ni de DB.
 - **`core/config.py` valida el entorno al arrancar.** Si falta una var, la app no levanta.
+- **`db/seeds/` solo escribe bajo `user_mock_`.** Es el prefijo que separa la demo de las cuentas reales; Clerk nunca emite un id así, y el borrado del seed se filtra siempre por él.
 - REST: sustantivos en plural, verbos por método HTTP. `GET /projects/{id}`, `POST /projects/{id}/elements`, `POST /ai/generate`.
+
+## Datos de demo
+
+Seis proyectos públicos de usuarios ficticios (casa, monoambiente, dúplex de dos plantas, oficina con subsuelo, local comercial y departamento), con sus plantas dibujadas y las instalaciones eléctrica, sanitaria y de gas.
+
+```bash
+python -m app.db.seeds              # inserta/reemplaza la demo (idempotente)
+python -m app.db.seeds --dry-run    # muestra qué escribiría, sin tocar la DB
+python -m app.db.seeds --purge      # borra solo la demo
+```
+
+Es idempotente por reemplazo: borra los proyectos `user_mock_*` y los vuelve a insertar, así que correrlo dos veces no duplica nada. Las plantas se arman con `db/seeds/layouts.py`, el gemelo en Python de `frontend/src/lib/plans/templates.ts` — misma geometría, ids secuenciales en vez de aleatorios para que dos corridas den el mismo dibujo.
 
 ## Autenticación
 
