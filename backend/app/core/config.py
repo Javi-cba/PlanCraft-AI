@@ -71,6 +71,13 @@ class Settings(BaseSettings):
     # to). Defaults to the CORS origins, which is what the browser sends.
     clerk_authorized_parties: str | None = None
 
+    # --- AWS Lambda -------------------------------------------------------
+    # Prefix API Gateway prepends to the path before it reaches the app. A REST
+    # API serves the stage in the URL ("/prod/projects"), so it must be stripped
+    # or every route 404s; an HTTP API on the $default stage sends nothing and
+    # this stays unset.
+    api_gateway_base_path: str = "/"
+
     # --- CORS -------------------------------------------------------------
     # Comma-separated list of exact origins (scheme + host + port, no path).
     cors_origins: str = "http://localhost:3000"

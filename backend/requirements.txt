@@ -1,6 +1,8 @@
 # API
 fastapi>=0.141,<1.0
 uvicorn[standard]>=0.52,<1.0
+# ASGI -> AWS Lambda adapter (see the `handler` in app/main.py).
+mangum>=0.19,<1.0
 
 # Database (Neon / Postgres)
 SQLAlchemy>=2.0,<3.0

@@ -48,3 +48,11 @@ README.md
 # Worktrees locales (Claude Code los crea acá). Nunca se suben.
 .claude/worktrees/
 .claude/skills/
+
+
+# Archivos comprimidos de despliegue
+*.zip
+
+# Entornos virtuales
+.venv/
+venv/

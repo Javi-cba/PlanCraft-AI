@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 
 from app.api.routes import ai, elements, floors, health, plans, projects
 from app.core.config import get_settings
@@ -59,3 +60,15 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+# AWS Lambda entrypoint: set the function handler to `app.main.handler`. Mangum
+# translates the API Gateway / Function URL event into an ASGI scope, so the same
+# `app` runs under uvicorn locally and under Lambda in production.
+#
+# `lifespan="off"`: the app registers no startup/shutdown hooks, and the lifespan
+# cycle would otherwise run on every single invocation.
+handler = Mangum(
+    app,
+    lifespan="off",
+    api_gateway_base_path=get_settings().api_gateway_base_path,
+)

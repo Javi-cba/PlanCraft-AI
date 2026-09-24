@@ -8,6 +8,7 @@
     "dev:web": "cd frontend && bun run dev",
     "dev:api": "cd backend && .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
     "build": "cd frontend && bun run build",
+    "build:lambda": "bash scripts/build-lambda.sh",
     "lint": "cd frontend && bun run lint"
   }
 }

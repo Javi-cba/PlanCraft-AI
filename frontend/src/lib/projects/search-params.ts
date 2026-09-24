@@ -8,7 +8,7 @@ import {
   type ProjectSort,
 } from "@/lib/schemas/project";
 
-/**
+/** 
  * The URL is the state of the projects list: `/projects?q=casa&sort=name&page=2`
  * is shareable, survives a refresh and makes the back button work.
  *
