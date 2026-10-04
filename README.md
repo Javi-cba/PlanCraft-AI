@@ -67,4 +67,4 @@ bun run setup   # instala todo y crea los .env
 bun run dev     # web :3000 + api :8000
 ```
 
-![image](https://github.com/user-attachments/assets/faa65740-7d19-4ef2-819c-737cfde32867)
+<img width="1368" height="810" alt="image" src="https://github.com/user-attachments/assets/91670a24-d26a-4176-80aa-429a6d773a62" />
